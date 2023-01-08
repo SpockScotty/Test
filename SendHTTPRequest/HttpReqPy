@@ -1,0 +1,92 @@
+#Python HTTP Request
+
+#https://www.alixaprodev.com/2022/03/convert-json-to-sqlite-database-in-python.html
+#
+import json, requests,sqlite3
+
+connection = sqlite3.connect('SandBox.db')
+cursor = connection.cursor()
+cursor.execute('Create Table if not exists PetSales (year Text, petroleum_product Text, sale Integer, country Text)')
+
+
+from datetime import datetime
+
+now = datetime.now()
+
+current_time = now.strftime("%H:%M:%S")
+print("Start Time =", current_time)
+
+url = requests.get("https://raw.githubusercontent.com/younginnovations/internship-challenges/master/programming/petroleum-report/data.json")
+text = url.text
+
+data = json.loads(text)
+columns = ['year', 'petroleum_product', 'sale', 'country']
+for row in data:
+    keys= tuple(row[c] for c in columns)
+    cursor.execute('insert into PetSales values(?,?,?,?)',keys)
+    #print(f'{row["year"]} data inserted Succefully')
+
+connection.commit()
+connection.close()
+
+current_time = now.strftime("%H:%M:%S")
+print("End Time =", current_time)
+
+
+
+
+
+"""
+import json, requests,sqlite3
+
+
+url = requests.get("https://jsonplaceholder.typicode.com/users")
+text = url.text
+
+data = json.loads(text)
+
+user = data[0]
+print(user['name'])
+
+address = user['address']
+print(address)
+
+Conditonal Logic and Loops
+
+w=5
+x = 1
+y = 100
+z= 15
+
+
+if y==x or x<y and x<w and w<z or y<z:
+  print('Conditions met to do something for y=x or x<y and x>w and w<z or y<z.')
+  print()
+  print('Sequence of x^2 + y^2 having x from 1 to 10 and y =100: ' )
+  while x<=10:
+    print(str((x**2)+(y**2)) +",", end=" ")
+    x+=1
+
+  print()
+  print()
+t=101
+while y<105:
+  print('y = ' + str(y) + ' is less than 105')
+  if y==t:
+    print('While loop broken with break at y = 102, do stuff here.')
+    break
+  y+=1
+print('Now starting loop again.')
+t=107
+while y<110:
+  y+=1
+  if y==t:
+    continue
+  print('y = ' + str(y) + ' is less than 105.')
+
+print('Skipped reporting y where y = ' + str(t))
+
+
+"""
+
+

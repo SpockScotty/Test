@@ -1,0 +1,76 @@
+
+var https  = require('https');
+var sqlite3 = require('sqlite3').verbose();
+
+var db   = new sqlite3.Database('./SandBox.db');
+var data = '';
+//var url  = 'https://jsonplaceholder.typicode.com/todos';
+var url = 'https://jsonplaceholder.typicode.com/users';
+var TableName = 'Users';
+
+
+
+
+
+var req = https.request(url, (res) => {
+
+  res.on('data', (d) => {
+    data += d;
+  });
+
+  res.on('end', () => {
+    var json = JSON.parse(data);
+//console.log(JSON.stringify(json, null, 4));
+   
+//db.run('drop table if exists ' + TableName);
+ 
+   create_table(json,TableName);
+
+//Verify the data made it into the table
+
+db.each('select rowid, name, username, email, address, phone, website, company '
+         + 'from ' + TableName
+         + ' order by rowid asc', (err, row) => {
+     console.log(row.rowid + ', ' + row.name+ ', ' + row.username + ', ' + row.email + ', ' + row.address + ', ' + row.website + ', ' + row.company );
+   });
+
+
+   
+ });
+
+});
+req.end();
+
+
+/*
+  Create the table and insert the values from each JSON object.
+*/
+function create_table(json,TableName) {
+
+
+  
+    db.serialize( () => {
+      db.run('create table if not exists '
+            + TableName 
+            + '(id numeric primary key, '
+            + 'name text, '
+            + 'username text, '
+            + 'email text, '
+            + 'address text, '
+            + 'phone text, '
+            + 'website text, '
+            + 'company text)');
+  
+      db.run('delete from ' + TableName); //or drop the table first..
+  
+      var stmt = db.prepare('insert into ' + TableName + ' values (?,?,?,?,?,?,?,?)');
+  
+      json.forEach( (item) => {
+        stmt.run([item.id, item.name, item.username, item.email, item.address, item.phone, item.website, item.company]);
+      });
+  
+      stmt.finalize();
+  
+    });
+  
+  }

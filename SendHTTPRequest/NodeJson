@@ -1,0 +1,8 @@
+
+const sqlite3 = require('sqlite3').verbose();
+
+let db = new sqlite3.Database('./SandBox.db');
+db.run('CREATE TABLE Cred(CredID INTEGER PRIMARY KEY NOT NULL, CredName TEXT NOT NULL, Name TEXT NOT NULL, Age INTEGER NOT NULL');
+//db.run(sql, params, function(err){
+    // 
+  //});

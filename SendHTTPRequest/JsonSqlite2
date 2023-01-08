@@ -1,0 +1,71 @@
+
+//Declare Environments
+//const { table } = require('console');
+var https  = require('https');
+var sqlite3 = require('sqlite3').verbose();
+
+//Declare Data
+var db   = new sqlite3.Database('./SandBox.db');
+var url  = 'https://jsonplaceholder.typicode.com/todos';
+var data = '';
+var TableName = 'Merits';
+
+/*
+  Make an HTTPS request to the RESTful web service
+*/
+var req = https.request(url, (res) => {
+
+  res.on('data', (d) => {
+    data += d;
+  });
+
+  res.on('end', () => {
+    var json = JSON.parse(data);
+
+   //db.run('drop table if exists ' + TableName);  
+    create_table(json, TableName);
+
+    /*
+      verify the data made it into the table
+    */
+    db.each('select rowid, title '
+          + 'from ' + TableName
+          + ' order by rowid asc', (err, row) => {
+      console.log(row.rowid + ': ' + row.title);
+    });
+  });
+
+});
+req.end();
+
+
+/*
+  Create the table and insert the values from each JSON object.
+*/
+function create_table(json, TableName) {
+
+    // hard coding is cheating, mostly... make it dynamic!
+ 
+ 
+
+    db.serialize( () => {
+      db.run('create table if not exists '
+            + TableName + '('
+            + 'id numeric primary key, '
+            + 'userid numeric, '
+            + 'title text, '
+            + 'completed text)');
+  
+      db.run('delete from ' + TableName); //or drop the table first..
+  
+      var stmt = db.prepare('insert into ' + TableName + ' values (?,?,?,?)');
+  
+      json.forEach( (item) => {
+        stmt.run([item.id, item.userid, item.title, item.completed]);
+      });
+  
+      stmt.finalize();
+  
+    });
+  
+  }
